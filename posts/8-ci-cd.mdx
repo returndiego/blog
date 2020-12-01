@@ -139,15 +139,26 @@ non-root-host-user@example.com:~$ git clone git@github.com:username/app.git
 
 Open your GitHub repository and go to Settings > Webhook
 
-`https://github.com/username/someRepo/settings/hooks`
+```
+https://github.com/username/someRepo/settings/hooks
+```
 
-- Payload URL: `https://jenkins.example.com/github-webhook/`
+- Payload URL:
+
+```
+https://jenkins.example.com/github-webhook/
+```
+
 - Content type: `application/x-www-form-urlencoded`
 - Secret: `[Leave empty]`
 - Which events would you like to trigger this webhook?: Just the push event. `[checked]`
 - Active: We will deliver event details when this hook is triggered. `[checked]`
 
-Create a new item in jenkins: `https://jenkins.example.com/view/all/newJob`
+Create a new item in jenkins:
+
+```
+https://jenkins.example.com/view/all/newJob
+```
 
 Source Code Management
 

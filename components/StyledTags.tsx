@@ -20,7 +20,7 @@ export function P({ children }: { children: React.ReactNode }) {
 
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="font-mono inline-block px-2 bg-black rounded">
+    <code className="overflow-x-auto font-mono align-middle inline-block px-2 bg-black rounded">
       {children}
     </code>
   )
@@ -28,7 +28,7 @@ export function InlineCode({ children }: { children: React.ReactNode }) {
 
 export function Code({ children }: { children: React.ReactNode }) {
   return (
-    <code className="font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
+    <code className="select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
       {children}
     </code>
   )
@@ -39,7 +39,11 @@ export function Table({ children }: { children: React.ReactNode }) {
 }
 
 export function Li({ children }: { children: React.ReactNode }) {
-  return <li className="list-decimal">{children}</li>
+  return (
+    <li className="list-decimal list-inside">
+      <p className="inline-block">{children}</p>
+    </li>
+  )
 }
 
 export function Ol({ children }: { children: React.ReactNode }) {

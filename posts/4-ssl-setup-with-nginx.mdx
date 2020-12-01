@@ -11,7 +11,7 @@ You not have realized, but if you followed the previous instructions correctly, 
 
 Confirm that nginx is working by going to the domain you set up previously. **example.com** in your browser.
 
-If cannot reach your website in the browser, check that:
+If you cannot reach your website in the browser, check that:
 
 1. Nginx is running: `systemctl status nginx`
 2. Port `:80` is open in your droplet: `netstat -tln`
@@ -26,7 +26,7 @@ cat /etc/nginx/sites-available/default | grep root
 
 `/var/www/html` is the default nginx root directory for Ubuntu 18. May vary in other linux distros.
 
-We need to provide this directory to certbot. It will create a file in this directory and request from another server. This confirms that your are indeed the owner of this server.
+We need to provide this directory to certbot. It will create a file in this directory and request it from another server. This confirms that your are indeed the owner of this server.
 
 Insert your email and domain in this command to get the SSL certificates
 
@@ -44,7 +44,7 @@ NGINX has an inmense amount of options. You can configure many ways. I've saved 
 
 Here is a high-level view of my configuration
 
-THIS IS A REVERSE PROXY SETUP FOR NGINX USING NODEJS (HTTPS ENABLED)
+DIAGRAM OF A REVERSE PROXY SETUP FOR NGINX USING NODEJS (HTTPS ENABLED)
 
 ```
                          +---------------------------------+
@@ -89,7 +89,7 @@ Test you made no mistakes configuring NGINX
 nginx -t
 ```
 
-Correct output
+Correct output:
 
 ```sh
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
@@ -103,7 +103,7 @@ systemctl restart nginx && \
 systemctl status nginx
 ```
 
-crontab is used in Linux to schedule command executions. Set up a cronjob to auto-renew SSL certificates
+crontab is used in Linux to schedule command executions. Set up a cronjob to auto-renew SSL certificates.
 
 Open the current crontab configuration
 

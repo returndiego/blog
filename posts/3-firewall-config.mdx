@@ -5,7 +5,7 @@ description: Learn the importance of a firewall and setup it up.
 
 # Configure your firewall
 
-We will setup a Firewall to control the inconming and outgoing network traffic. In the case of a web server this means opening port :80 for HTTP and :443 for HTTPS requests. Which means that anyone on the internet can request and see our page. In addition we have to open port :22 so that we can SSH into our server and manage it.
+We will setup a Firewall to control the inconming and outgoing network traffic. In the case of a web server this means opening port :80 for HTTP and :443 for HTTPS requests. Which means that anyone on the internet can request and get our page. In addition we have to open port :22 so that we can SSH into our server and manage it.
 
 Be very carefull setting up your firewall. If you turn on / enable the firewall and port :22 is not open, you won't be able to access your server again.
 
@@ -70,7 +70,7 @@ Double check the open ports using the net-tools.
 netstat -tln
 ```
 
-You should see the following
+You should see the following:
 
 ```
 Active Internet connections (only servers)
@@ -80,5 +80,3 @@ tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
 tcp6       0      0 :::80                   :::*                    LISTEN
 tcp6       0      0 :::22                   :::*                    LISTEN
 ```
-
----
