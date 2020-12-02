@@ -51,7 +51,6 @@ export default function PostPage({ source, frontMatter }) {
     <>
       <Head>
         <title>{frontMatter.title}</title>
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>{content}</Layout>
     </>
