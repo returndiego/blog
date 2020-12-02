@@ -1,10 +1,10 @@
 {
   "name": "Diego Ramos' blog",
   "short_name": "Diego's blog",
+  "description": "Web development notes by engineer Diego Ramos",
   "theme_color": "#ef4444",
   "background_color": "#1c1917",
   "display": "fullscreen",
-  "orientation": "portrait",
   "scope": "/",
   "start_url": "/",
   "icons": [
