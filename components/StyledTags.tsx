@@ -20,7 +20,7 @@ export function P({ children }: { children: React.ReactNode }) {
 
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="overflow-x-auto font-mono align-middle inline-block px-2 bg-black rounded">
+    <code className="select-all overflow-x-auto font-mono align-middle inline-block px-2 bg-black rounded">
       {children}
     </code>
   )

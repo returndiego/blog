@@ -4,7 +4,7 @@
   "description": "Web development notes by engineer Diego Ramos",
   "theme_color": "#ef4444",
   "background_color": "#1c1917",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "natural",
   "scope": "/",
   "start_url": "/",
