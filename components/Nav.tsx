@@ -4,7 +4,7 @@ export default function Nav() {
   return (
     <nav className="flex justify-between items-center p-2 border-b-2 border-red-500">
       <Link href="/">
-        <a className="font-semibold">Diego Ramos</a>
+        <a className="font-semibold text-xl">Diego Ramos</a>
       </Link>
       <a
         rel="noopener noreferrer"
