@@ -1,6 +1,6 @@
 export function H1({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="font-white text-4xl font-extrabold tracking-wide mb-4">
+    <h1 className="font-white text-4xl font-bold tracking-wide mb-4">
       {children}
     </h1>
   )
@@ -15,12 +15,12 @@ export function H3({ children }: { children: React.ReactNode }) {
 }
 
 export function P({ children }: { children: React.ReactNode }) {
-  return <p className="mb-4">{children}</p>
+  return <p className="mb-4 leading-10">{children}</p>
 }
 
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="select-all overflow-x-auto font-mono align-middle inline-block px-2 bg-black rounded">
+    <code className="select-all overflow-x-auto font-mono inline px-2 py-1 bg-black rounded">
       {children}
     </code>
   )
@@ -28,7 +28,7 @@ export function InlineCode({ children }: { children: React.ReactNode }) {
 
 export function Code({ children }: { children: React.ReactNode }) {
   return (
-    <code className="select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
+    <code className="text-lg select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
       {children}
     </code>
   )
