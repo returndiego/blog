@@ -28,39 +28,34 @@ export default function Index({ posts }: { posts: any }) {
         <title>Diego Ramos</title>
       </Head>
       <Layout>
-        <a
-          rel="noopener noreferrer"
-          target="_blank"
-          href="https://github.com/Ramos-Diego/dominilingo"
-          className="block font-bold"
-        >
-          Check out my latest creation:{' '}
-          <span className="italic underline">Dominilingo</span>
-        </a>
-        <div>These are my notes on how to setup servers for CI/CD</div>
-        <div className="grid gap-3 p-4 text-xl font-mono italic font-semibold text-red-500 ring-2 ring-red-500 rounded-2xl">
-          {posts.map((post: any, idx: number) => (
-            <Link
-              as={`/posts/${post.filePath.replace(/\.mdx?$/, '')}`}
-              href={`/posts/[slug]`}
-              key={idx}
-            >
-              <a>{post.data.title}</a>
-            </Link>
-          ))}
-        </div>
         <div>
-          This is a progressive web application (
+          <h1 className="text-3xl mb-3 font-sans">Projects</h1>
           <a
             rel="noopener noreferrer"
             target="_blank"
-            href="https://en.wikipedia.org/wiki/Progressive_web_application#Characteristics"
-            className="underline
-          "
+            href="https://github.com/Ramos-Diego/domilingo"
+            className="font-bold italic"
           >
-            PWA
+            Domilingo
           </a>
-          ).
+          <p className="inline-block ml-2">A dicitionary of dominican slang.</p>
+        </div>
+        <div>
+          <h1 className="text-3xl mb-3 font-sans">Posts</h1>
+          <div>These are my notes on how to setup servers for CI/CD</div>
+          <div className="grid gap-3 py-4 text-red-500">
+            {posts.map((post: any, idx: number) => (
+              <Link
+                as={`/posts/${post.filePath.replace(/\.mdx?$/, '')}`}
+                href={`/posts/[slug]`}
+                key={idx}
+              >
+                <a className="p-4 bg-black hover:bg-opacity-60 rounded hover:text-red-300">
+                  {post.data.title}
+                </a>
+              </Link>
+            ))}
+          </div>
         </div>
       </Layout>
     </>
