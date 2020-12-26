@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
+    "preview": "next build && next start",
     "start": "next start",
     "type-check": "tsc"
   },

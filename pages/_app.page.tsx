@@ -11,7 +11,7 @@ import {
   Table,
   Li,
   Ol,
-} from '../components/StyledTags'
+} from './config/StyledTags'
 import Head from 'next/head'
 
 // MDX providers let's us choose how the corresponding markdown is rendered

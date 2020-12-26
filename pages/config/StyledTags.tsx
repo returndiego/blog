@@ -7,7 +7,7 @@ export function H1({ children }: { children: React.ReactNode }) {
 }
 
 export function H2({ children }: { children: React.ReactNode }) {
-  return <h2 className="font-blod">{children}</h2>
+  return <h2 className="text-2xl font-medium">{children}</h2>
 }
 
 export function H3({ children }: { children: React.ReactNode }) {
