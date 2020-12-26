@@ -47,10 +47,10 @@ export default function Index({ posts }: { posts: any }) {
                 rel="noopener noreferrer"
                 target="_blank"
                 href="https://github.com/Ramos-Diego/domilingo"
-                className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-300 dark:focus:bg-gray-800 focus:bg-gray-300"
+                className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
               >
                 <dt>Domilingo</dt>
-                <dd className="text-gray-200 dark:text-gray-400">
+                <dd className="text-gray-600 dark:text-gray-400">
                   A dictionary of dominican slang.
                 </dd>
               </a>
@@ -69,10 +69,10 @@ export default function Index({ posts }: { posts: any }) {
                 >
                   <a
                     href="#"
-                    className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-300 dark:focus:bg-gray-800 focus:bg-gray-300"
+                    className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
                   >
                     <dt>{post.data.title}</dt>
-                    <dd className="text-gray-200 dark:text-gray-400">
+                    <dd className="text-gray-600 dark:text-gray-400">
                       {post.data.description}
                     </dd>
                   </a>
