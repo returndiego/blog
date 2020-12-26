@@ -1,9 +1,5 @@
 export function H1({ children }: { children: React.ReactNode }) {
-  return (
-    <h1 className="font-white text-4xl font-bold tracking-wide mb-4">
-      {children}
-    </h1>
-  )
+  return <h1 className="text-3xl font-semibold">{children}</h1>
 }
 
 export function H2({ children }: { children: React.ReactNode }) {
@@ -28,9 +24,11 @@ export function InlineCode({ children }: { children: React.ReactNode }) {
 
 export function Code({ children }: { children: React.ReactNode }) {
   return (
-    <code className="text-lg select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
-      {children}
-    </code>
+    <div className="grid">
+      <code className="text-lg select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
+        <pre>{children}</pre>
+      </code>
+    </div>
   )
 }
 
