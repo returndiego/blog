@@ -25,7 +25,7 @@ export function InlineCode({ children }: { children: React.ReactNode }) {
 export function Code({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid">
-      <code className="text-lg select-all font-mono overflow-x-auto block p-2 bg-black text-white rounded">
+      <code className="select-all font-mono overflow-x-auto block p-2 bg-black text-white rounded">
         <pre>{children}</pre>
       </code>
     </div>
@@ -46,4 +46,12 @@ export function Li({ children }: { children: React.ReactNode }) {
 
 export function Ol({ children }: { children: React.ReactNode }) {
   return <ol className="ml-6">{children}</ol>
+}
+
+export function Mark({ children }: { children: React.ReactNode }) {
+  return (
+    <mark className="inline-block px-2 py-1 rounded bg-yellow-200">
+      {children}
+    </mark>
+  )
 }

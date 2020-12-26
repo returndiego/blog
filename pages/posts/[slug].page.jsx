@@ -10,6 +10,11 @@ import Head from 'next/head'
 import path from 'path'
 import Layout from '../shared/Layout'
 import { postFilePaths, POSTS_PATH } from '../../utils/mdxUtils'
+import { Mark } from '../config/StyledTags'
+
+const components = {
+  Mark,
+}
 
 export const getStaticPaths = async () => {
   const paths = postFilePaths.map((path) => {
@@ -46,7 +51,7 @@ export const getStaticProps = async ({ params }) => {
 }
 
 export default function PostPage({ source, frontMatter }) {
-  const content = hydrate(source)
+  const content = hydrate(source, { components })
   return (
     <>
       <Head>
