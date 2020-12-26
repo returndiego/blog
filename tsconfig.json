@@ -23,6 +23,7 @@
     "**/*.ts",
     "**/*.tsx",
     "pages/posts/[slug].page.jsx",
-    "next.config.js"
+    "next.config.js",
+    "pages/test.page.jsx"
   ]
 }
