@@ -42,25 +42,26 @@ export default function Index({ posts }: { posts: any }) {
             <header>
               <h1 className="text-xl font-semibold">Projects</h1>
             </header>
-            <dl className="ml-3 mt-3 space-y-2">
+            <article className="ml-3 mt-3 space-y-2">
               <a
                 rel="noopener noreferrer"
                 target="_blank"
+                aria-label="Domilingo"
                 href="https://github.com/Ramos-Diego/domilingo"
-                className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
+                className="block px-2 py-1 rounded-md hover:shadow-md focus:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
               >
-                <dt>Domilingo</dt>
-                <dd className="text-gray-600 dark:text-gray-400">
+                <h1>Domilingo</h1>
+                <p className="text-gray-600 dark:text-gray-300">
                   A dictionary of dominican slang.
-                </dd>
+                </p>
               </a>
-            </dl>
+            </article>
           </section>
           <section>
             <header>
               <h1 className="text-xl font-semibold">Posts</h1>
             </header>
-            <dl className="ml-3 mt-3 space-y-2">
+            <article className="ml-3 mt-3 space-y-2">
               {posts.map((post: any, idx: number) => (
                 <Link
                   as={`/posts/${post.filePath.replace(/\.mdx?$/, '')}`}
@@ -68,17 +69,20 @@ export default function Index({ posts }: { posts: any }) {
                   key={idx}
                 >
                   <a
+                    aria-label={post.data.title}
                     href="#"
-                    className="block px-2 py-1 rounded-md hover:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
+                    className="block px-2 py-1 rounded-md hover:shadow-md focus:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
                   >
-                    <dt>{post.data.title}</dt>
-                    <dd className="text-gray-600 dark:text-gray-400">
-                      {post.data.description}
-                    </dd>
+                    <dl>
+                      <dt>{post.data.title}</dt>
+                      <dd className="text-gray-600 dark:text-gray-300">
+                        {post.data.description}
+                      </dd>
+                    </dl>
                   </a>
                 </Link>
               ))}
-            </dl>
+            </article>
           </section>
         </div>
       </Layout>

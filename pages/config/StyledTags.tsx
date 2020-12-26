@@ -11,12 +11,12 @@ export function H3({ children }: { children: React.ReactNode }) {
 }
 
 export function P({ children }: { children: React.ReactNode }) {
-  return <p className="mb-4 leading-10">{children}</p>
+  return <p className="mb-4 leading-8">{children}</p>
 }
 
 export function InlineCode({ children }: { children: React.ReactNode }) {
   return (
-    <code className="select-all overflow-x-auto font-mono inline px-2 py-1 bg-black rounded">
+    <code className="select-all overflow-x-auto font-mono inline px-2 py-1 bg-black text-white rounded">
       {children}
     </code>
   )
@@ -25,7 +25,7 @@ export function InlineCode({ children }: { children: React.ReactNode }) {
 export function Code({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid">
-      <code className="text-lg select-all font-mono overflow-x-auto block mb-4 p-2 bg-black rounded">
+      <code className="text-lg select-all font-mono overflow-x-auto block p-2 bg-black text-white rounded">
         <pre>{children}</pre>
       </code>
     </div>
