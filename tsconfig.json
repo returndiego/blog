@@ -22,8 +22,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "pages/posts/[slug].page.jsx",
-    "next.config.js",
-    "pages/test.page.jsx"
+    "pages/posts/[slug].route.jsx",
+    "next.config.js"
   ]
 }

@@ -18,7 +18,7 @@ export default function Nav() {
             <a
               rel="noopener noreferrer"
               target="_blank"
-              href="https://github.com/Ramos-Diego"
+              href="https://github.com/returndiego"
               className="p-1 rounded-full hover:shadow-md focus:outline-none transition dark:hover:bg-gray-700 hover:bg-gray-300 dark:focus:bg-gray-700 focus:bg-gray-300"
             >
               <svg className="w-7 h-7 fill-current" viewBox="0 0 512 512">

@@ -41,7 +41,7 @@ export default function Index({ posts }: { posts: any }) {
               rel="noopener noreferrer"
               target="_blank"
               aria-label="Domilingo"
-              href="https://github.com/Ramos-Diego/domilingo"
+              href="https://github.com/returndiego/domilingo"
               className="block px-2 py-1 rounded-md hover:shadow-md focus:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
             >
               <h1>Domilingo</h1>
