@@ -40,6 +40,18 @@ export default function Index({ posts }: { posts: any }) {
             <a
               rel="noopener noreferrer"
               target="_blank"
+              aria-label="Core Web Vitals"
+              href="https://github.com/returndiego/not-platzi"
+              className="block px-2 py-1 rounded-md hover:shadow-md focus:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
+            >
+              <h1>Core Web Vitals</h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Copy of a website with improved Core Web Vitals
+              </p>
+            </a>
+            <a
+              rel="noopener noreferrer"
+              target="_blank"
               aria-label="Domilingo"
               href="https://github.com/returndiego/domilingo"
               className="block px-2 py-1 rounded-md hover:shadow-md focus:shadow-md focus:outline-none transition dark:hover:bg-gray-800 hover:bg-gray-50 dark:focus:bg-gray-800 focus:bg-gray-50"
