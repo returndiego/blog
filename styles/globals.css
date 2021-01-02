@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: Roboto Slab;
+    font-style: normal;
+    font-display: swap;
+    font-weight: 400;
+    src: local('Roboto Slab'), local('Roboto-Slab'),
+      url(/fonts/roboto-slab/RobotoSlab-Regular.ttf) format('truetype');
+  }
+}

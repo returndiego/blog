@@ -10,7 +10,6 @@ module.exports = {
   theme: {
     fontFamily: {
       heading: ['"Roboto Slab"'],
-      body: ['Roboto'],
     },
     colors: {
       ...colors,
