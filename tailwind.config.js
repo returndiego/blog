@@ -8,6 +8,10 @@ module.exports = {
   ],
   darkMode: 'media', // or 'media' or 'class'
   theme: {
+    fontFamily: {
+      heading: ['"Roboto Slab"'],
+      body: ['Roboto'],
+    },
     colors: {
       ...colors,
       gray: colors.warmGray,

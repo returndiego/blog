@@ -1,5 +1,7 @@
 const H1 = ({ children }: { children: React.ReactNode }) => (
-  <h1 className="text-3xl font-semibold">{children}</h1>
+  <h1 className="font-heading tracking-wider text-3xl font-semibold">
+    {children}
+  </h1>
 )
 
 const H2 = ({ children }: { children: React.ReactNode }) => (

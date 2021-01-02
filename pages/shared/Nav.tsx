@@ -6,7 +6,7 @@ export default function Nav() {
       <article className="max-w-screen-md w-full px-2 sm:px-4 lg:px-0 flex items-center justify-between">
         <section>
           <Link href="/">
-            <a className="cursor-pointer text-xl font-bold focus:outline-none hover:underline focus:underline">
+            <a className="font-heading tracking-wider cursor-pointer text-xl font-bold focus:outline-none hover:underline focus:underline">
               Diego Ramos
             </a>
           </Link>

@@ -1,10 +1,12 @@
 import { AppProps } from 'next/app'
 import 'tailwindcss/tailwind.css'
 import Head from 'next/head'
+import GoogleFonts from 'next-google-fonts'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
+      <GoogleFonts href="https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Slab&display=swap" />
       <Head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
