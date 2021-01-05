@@ -19,10 +19,5 @@
     "target": "esnext"
   },
   "exclude": ["node_modules"],
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "pages/posts/[slug].route.jsx",
-    "next.config.js"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "pages/posts/[slug].jsx", "next.config.js"]
 }

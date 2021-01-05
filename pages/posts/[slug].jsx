@@ -9,11 +9,11 @@ import matter from 'gray-matter'
 import Head from 'next/head'
 import path from 'path'
 import dynamic from 'next/dynamic'
-import Layout from '../shared/Layout'
+import Layout from '../../components/Layout'
 import { postFilePaths, POSTS_PATH } from '../../utils/mdxUtils'
-import components from './MDXComponents'
+import components from '../../components/MDXComponents'
 
-components.Mark = dynamic(() => import('./Mark'))
+components.Mark = dynamic(() => import('../../components/Mark'))
 
 export const getStaticPaths = async () => {
   const paths = postFilePaths.map((path) => {

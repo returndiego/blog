@@ -1,0 +1,959 @@
+---
+title: CI/CD With Nginx and Jenkins
+description: Deploy Nginx and Jenkins servers to have a complete CI/CD setup.
+---
+
+# CI/CD With Nginx and Jenkins
+
+If you would like to simply commit changes to GitHub have them automitcally deployed, you need Continous Integration and Continous Deployment (CI/CD).
+
+By the end of the tutorial you will have node application running in your production server and any changes made to the GitHub repository will update the code in such server. For this tutorial we will use Nginx and Node.js to deploy a website served using Express.js.
+
+Pre-requesits:
+
+- Basic knowledge of the Linux command line
+- Basic knowledge of Node.js and JavaScript
+
+We will have two separate servers. One for Jenkins and one for the website. Let's create a Droplet in DigitalOcean to host our Nginx server
+
+## 1. Create a droplet
+
+1. In the navigation bar go to Create > **Droplet**
+
+2. Choose an image > Distribution > **Ubuntu 20.04 (LTS) x64**
+
+3. Choose a plan
+
+4. Add block storage **(Skip)**
+
+5. Choose a data center close to you
+
+Now we are going to create an SSH key pair in order to safely connect from our computer to the server.
+
+6. Add SSH Key
+
+   1. Generate public and private keys in your **local machine**
+
+      ```sh
+      ssh-keygen -t rsa -b 4096
+      ```
+
+      Use default directory and filename. Password is optional.
+
+   2. Transfer your public key to the server
+
+      ```sh
+      ssh-copy-id username@[insert-ip]
+      ```
+
+      DigitalOcean gives you the option to enter the content of the public key in the web user interface. Skip this step if you did so.
+
+   3. Disable password authentication in the server
+
+      ```sh
+      nano /etc/ssh/sshd_config
+      ```
+
+      Set the following line to `no`:
+
+      ```sh
+      PasswordAuthentication no
+      ```
+
+      Password authentication is not recommended for your server's security. You may leave it on if wish.
+
+## Setup DNS with Namecheap
+
+When we create a droplet it provides us with a public IPv4. This is what computers use to identify themselves on the internet, but usually we assign a string (domain) in order to avoid memorizing IPs. We will use DNS to assing a domain to this server.
+
+1. Log into NameCheap.com
+
+2. Buy a domain and go to your NameCheap dashboard > Domain List > select a domain name > **manage**
+
+3. In the top bar select **Advanced DNS** > Under **host records** you should see 2 entries with “@” and “www”
+
+4. Switch to DigitalOcean
+
+5. Copy the **Public IP IPv4** from the droplet's description
+
+6. Go back to NameCheap and enter your **Public IP IPv4**:
+
+| Type     | Host | Value           |
+| -------- | ---- | --------------- |
+| A Record | @    | 123.123.123.123 |
+| A Record | www  | 123.123.123.123 |
+
+## 2. Install software in your server
+
+Now that we have our droplet running and we can SSH into it, let us intalls the software we need to complete this tutorial.
+
+If you are using Windows open you WSL and SSH into your server. If you are working on Mac simply open Terminal and execute the following commands.
+
+```sh
+ssh [insert-user]@[insert-ip-OR-your-domain.com]
+```
+
+To login for the first time in DigitaOcean use `root` as user.
+
+Become root to easily install all the software.
+
+```sh
+sudo su
+```
+
+Before installing any package Update Ubuntu and reboot your server. This will ensure that you are downloading the latest packages.
+
+```sh
+apt update && \
+apt upgrade -y && \
+reboot
+```
+
+Check if system still needs to be restarted.
+
+```sh
+cat /var/run/reboot-required
+```
+
+If the file doesn't exist, you don't need to restart Ubuntu.
+
+Install **net-tools**. This program provides network monitoring tools.
+
+```sh
+apt install -y net-tools
+```
+
+Install **nginx**, a web server that can also be used as a reverse proxy. It is a key component of this setup.
+
+```sh
+apt install -y nginx
+```
+
+Use `systemctl`, a linux system manager, to start nginx automatically on system restart
+
+```sh
+systemctl start nginx && \
+systemctl enable nginx && \
+systemctl status nginx
+```
+
+Install **certbot**, it provides SSL certification tools.
+
+```sh
+apt install -y certbot
+```
+
+Install **Git**. Git is a distributed version-control system for tracking changes in source code. It is needed to use GitHub.
+
+```sh
+apt install -y git
+```
+
+Install **Node.js**.
+
+```sh
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && \
+apt install -y nodejs
+```
+
+I chose Node 14, but you can choose any version of Node.js from [here](https://github.com/nodesource/distributions/blob/master/README.md).
+
+Install **Development tools** (for Node.js).
+
+```sh
+apt install -y gcc g++ make
+```
+
+Install **Yarn**, a much faster and better alternative to the Node Package Manager (NPM).
+
+```sh
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
+apt update && apt install -y yarn
+```
+
+Install **PM2**, a process manager that allows for 0-downtime deploys with multicore servers.
+
+```sh
+yarn global add pm2
+```
+
+Verify that the following programs are installed
+
+```sh
+apt list --installed | egrep 'net-tools|nodejs|yarn|gcc-c++|nginx|certbot|git'
+```
+
+---
+
+If you feel like you've messed up at some point you can use these chained commands to run all the installations at once.
+
+### Installations combined for Ubuntu
+
+```sh
+apt update && apt upgrade -y && \
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && \
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
+apt update && \
+apt install -y nodejs net-tools nginx git gcc g++ make certbot yarn && \
+yarn global add pm2 && \
+systemctl start nginx && \
+systemctl enable nginx && \
+systemctl status nginx
+```
+
+Check if you need to restart your server after these installations.
+
+## 3. Configure your firewall
+
+We will setup a Firewall to control the inconming and outgoing network traffic. In the case of a web server this means opening port :80 for HTTP and :443 for HTTPS requests. Which means that anyone on the internet can request and get our page. In addition we have to open port :22 so that we can SSH into our server and manage it.
+
+Be very carefull setting up your firewall. If you turn on / enable the firewall and port :22 is not open, you won't be able to access your server again.
+
+Use the Uncomplicated Firewall (UFW) to verify the list of apps available on UWF
+
+```sh
+ufw app list
+```
+
+You should see the following apps
+
+```sh
+Nginx Full
+Nginx HTTP
+Nginx HTTPS
+OpenSSH
+```
+
+This will open port :80 (HTTP) and :443 (HTTPS)
+
+```sh
+ufw allow 'Nginx Full'
+```
+
+This will open port :22 for all network interfaces: 0.0.0.0
+
+```sh
+ufw allow OpenSSH
+```
+
+<Mark>
+  It's IMPORTANT that you don't forget to allow OpenSSH before enabling the
+  firewall as you may get permanently locked out of your server.
+</Mark>
+
+Enable the firewall
+
+```sh
+ufw enable
+```
+
+Check if the setup is correct
+
+```sh
+ufw status
+```
+
+Correct ouput
+
+```
+To                         Action      From
+--                         ------      ----
+OpenSSH                    ALLOW       Anywhere
+Nginx Full                 ALLOW       Anywhere
+OpenSSH (v6)               ALLOW       Anywhere (v6)
+Nginx Full (v6)            ALLOW       Anywhere (v6)
+```
+
+Double check the open ports using the net-tools.
+
+```sh
+netstat -tln
+```
+
+You should see the following:
+
+```
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
+tcp6       0      0 :::80                   :::*                    LISTEN
+tcp6       0      0 :::22                   :::*                    LISTEN
+```
+
+## 4. Get SSL certificates
+
+SSL certificates enable HTTPS in your website.
+
+You not have realized, but if you followed the previous instructions correctly, you're already running an Nginx server.
+
+Confirm that nginx is working by going to the domain you set up previously. **example.com** in your browser.
+
+If you cannot reach your website in the browser, check that:
+
+1. Nginx is running: `systemctl status nginx`
+2. Port `:80` is open in your droplet: `netstat -tln`
+
+## Setup Nginx as a reverse proxy server
+
+First we need to find the nginx default root directory
+
+```sh
+cat /etc/nginx/sites-available/default | grep root
+```
+
+`/var/www/html` is the default nginx root directory for Ubuntu 18. May vary in other linux distros.
+
+We need to provide this directory to certbot. It will create a file in this directory and request it from another server. This confirms that your are indeed the owner of this server.
+
+Insert your email and domain in this command to get the SSL certificates
+
+```sh
+certbot certonly --webroot --email your@email.com --no-eff-email --agree-tos -w /var/www/html -d example.com -d www.example.com
+```
+
+Get DH Parameters. Diffie–Hellman key exchange is a method of securely exchanging cryptographic keys over a public channel. This adds another layer of security to your server.
+
+```sh
+openssl dhparam -out /etc/nginx/dhparam.pem 2048
+```
+
+NGINX has an inmense amount of options. You can configure many ways. I've saved the configurations that I used in Github.
+
+Here is a high-level view of my configuration
+
+DIAGRAM OF A REVERSE PROXY SETUP FOR NGINX USING NODEJS (HTTPS ENABLED)
+
+```
+                         +---------------------------------+
+                         |              SERVER             |
+                         | +------------- +--------------+ |
+                         | |      HTTP    | static files | |
+                         | |  +---------> +--------------+ |
+                         | v  |                            |
+                    +----+-+--+-+         +--------------+ |
+ +--------+ +-----> |   nginx   | +-----> |    nodejs    | |
+ | client |  HTTPS  |0.0.0.0:80 |   HTTP  |              | |
+ +--------+ <-----+ |0.0.0.0:443| <-----+ |localhost:8080| |
+                    +----+------+         +--------------+ |
+                         +---------------------------------+
+```
+
+The `ngixn.conf` contains all the configurations for NGINX, however we will not directly type all the configuration in this single file. Instead we will split up the configuration and import all the pieces `ngixn.conf`. This is extremely useful because every domain/website configuration is stored separately.
+
+Edit `nginx.conf`
+
+```sh
+nano /etc/nginx/nginx.conf
+```
+
+Add, edit `example.com.conf`, `proxy.conf`, `security.conf` and replace the placeholders
+
+```sh
+nano /etc/nginx/conf.d/example.com.conf
+nano /etc/nginx/snippets/proxy.conf
+nano /etc/nginx/snippets/security.conf
+```
+
+All the lines that must be edited have `# EDIT HERE` at the end.
+
+```sh
+server_name example.com; # EDIT HERE
+```
+
+Test you made no mistakes configuring NGINX
+
+```sh
+nginx -t
+```
+
+Correct output:
+
+```sh
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+Restart nginx
+
+```sh
+systemctl restart nginx && \
+systemctl status nginx
+```
+
+crontab is used in Linux to schedule command executions. Set up a cronjob to auto-renew SSL certificates.
+
+Open the current crontab configuration
+
+```sh
+crontab -e
+```
+
+Paste the following command to auto-renew your SSL certificates
+
+```sh
+# ┌ minute (0 - 59)
+# │ ┌ hour (0 - 23)
+# │ │ ┌ day of month (1 - 31)
+# │ │ │ ┌ month (1 - 12)
+# │ │ │ │ ┌ day of week (0 - 6) (Sunday to Saturday;
+# │ │ │ │ │                      7 is also Sunday on some systems)
+# │ │ │ │ │
+# * * * * *  command_to_execute
+
+# USEFUL WEBSITE TO CREATE CRONJOBS
+# https://crontab.guru/
+
+# Check if SSL certificate needs to be renewed everyday at 3AM
+0 3 * * * certbot renew --post-hook "systemctl restart nginx"
+```
+
+Verify that cronjob is running by reading the cron logs
+
+```
+tail /var/log/cron
+```
+
+## 5. Manage your node apps
+
+We have been using the root user until now to easily go through all the configuration, but you should not run any application as root. We will create a new user with no root access which will run our node apps.
+
+Add an user in Ubuntu
+
+```sh
+adduser [insert-username]
+```
+
+Switch to the new user
+
+```sh
+su -l [insert-username]
+```
+
+`-, -l, --login`: make the shell a login shell
+
+Create the following folder structure in the home directory
+
+```
+example.com
+├── public
+│   └── test.html
+└── app.js
+```
+
+Create sample static file (test.html)
+
+```html
+<!-- ~/node-app/public/test.hmtl -->
+<h1>HELLO! NGINX is serving this static file (test.html)</h1>
+```
+
+This file will be available at `your-domain.com/test.html`
+
+Create simple test app
+
+```js
+// ~/node-app/app.js
+const express = require('express')
+const app = express()
+
+// Send a message
+app.get('/', (req, res) => res.json({ message: 'Hello world!' }))
+
+// Start listening on localhost:8080
+app.listen(8080, 'localhost')
+```
+
+This message will be available at `your-domain.com`. The reason for this can be found in the NGINX configuration. In there we setup a reverse proxy which redirects requests on PORT :80 or :443 to :8080 in the loopback interface.
+
+Install dependencies
+
+```sh
+cd ~/node-app/
+```
+
+```sh
+yarn add express
+```
+
+Start the app using PM2
+
+```sh
+pm2 start app.js --name example.com -i max
+```
+
+Note that in order to have 0-downtime deployment your server must have a minimun of 2 CPUs
+
+Go to your domain and test the app.
+
+Save the current pm2 configuration to be initiated on reboot
+
+```sh
+pm2 save
+```
+
+Get the script needed to enable PM2 to startup on boot
+
+```sh
+pm2 startup
+```
+
+Copy and paste the command provided by PM2.
+
+```
+...
+[PM2] To setup the Startup Script, copy/paste the following command:
+sudo env PATH=$PATH:/usr/bin /usr/local/share/.config/yarn/global/node_modules/pm2/bin/pm2 startup systemd -u user --hp /home/user
+```
+
+You can switch back to the root user by loggin out of the current user and run the PM2 command from there
+
+```sh
+exit
+```
+
+Test by restarting the server
+
+As `root`
+
+```sh
+reboot
+```
+
+## 6. Additional security with AppArmor
+
+AppArmor is a Linux kernel security module that allows the system administrator to restrict programs' capabilities with per-program profiles. This is not mandatory, but with this program we will limit what our node apps can access, thus increasing the security in our server.
+
+Install `apparmor` and `apparmor-utils`
+
+```sh
+apt update && apt install -y apparmor-profiles apparmor-utils
+```
+
+Create a blank profile
+
+```sh
+cd /etc/apparmor.d/
+aa-autodep nginx
+```
+
+Put the new profile in complain mode. When apparmor is in complain mode it doesn't block any access to the system, but logs all the attempts to access files that it may have blocked.
+
+```sh
+aa-complain nginx
+```
+
+Restart nginx
+
+```sh
+service nginx restart
+```
+
+Make one request to you domain by opening it in the browser:
+
+`http://example.com:8080/index.html`
+
+This will generate a list of this that NGINX asked to access in order to function
+
+Allow everything that NGINX needs to work
+
+```sh
+aa-logprof
+```
+
+Verify that the changes were applied
+
+```sh
+nano /etc/apparmor.d/usr.sbin.nginx
+```
+
+Make sure to have at least the `#include` and `capability` lines included
+
+```
+# Last Modified: Tue Jul 21 23:19:57 2020
+#include <tunables/global>
+
+/usr/sbin/nginx flags=(complain) {
+  #include <abstractions/apache2-common>
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+  #include <abstractions/ssl_keys>
+
+  capability dac_override,
+  capability setgid,
+  capability setuid,
+
+  /var/www/html/** r,
+  /path/to/example.com/public/** r,
+  /var/log/nginx/access.log w,
+  /var/log/nginx/error.log w,
+  /usr/sbin/nginx mr,
+  owner /etc/nginx/** r,
+  owner /run/nginx.pid rw,
+}
+```
+
+- Update the `/path/to/example.com/public/` line to include the entire directory and all of its subfolder with two asterisk (\*\*)
+- Make sure Nginx can write to the error log by setting w for `/var/log/nginx/error.log`
+
+Save, enforce and reload the configuration
+
+```sh
+aa-enforce nginx && \
+/etc/init.d/apparmor reload && \
+service nginx restart
+```
+
+[SOURCE](https://www.digitalocean.com/community/tutorials/how-to-create-an-apparmor-profile-for-nginx-on-ubuntu-14-04)
+
+## 7. Setup a Jenkins server
+
+This tutorial asumes that you have already setup an Ubuntu server with NGINX as a reverse proxy and SSL certificates.
+
+Spin up a new, separate server with all the same configurations as our node server except for the application itself and PM2, then follow these steps.
+
+Jenkins provides an [Official guide](https://www.jenkins.io/doc/book/installing/#long-term-support-release), but I decided to create my own tutorial.
+
+Become root to setup server faster
+
+```sh
+sudo su
+```
+
+Update Ubuntu and reboot
+
+```sh
+apt update && \
+apt upgrade -y && \
+reboot
+```
+
+Check if Java is installed
+
+```sh
+java -version
+```
+
+Expected output
+
+```sh
+openjdk version "11.0.7" 2020-04-14
+OpenJDK Runtime Environment (build 11.0.7+10-post-Ubuntu-3ubuntu1)
+OpenJDK 64-Bit Server VM (build 11.0.7+10-post-Ubuntu-3ubuntu1, mixed mode, sharing)
+```
+
+Install Java
+
+```sh
+sudo apt update && \
+apt install -y default-jre
+```
+
+Install Jenkins
+
+```sh
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - && \
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+    /etc/apt/sources.list.d/jenkins.list' && \
+sudo apt-get update && \
+sudo apt-get install -y jenkins
+```
+
+---
+
+**Installations combined for Ubuntu Jenkins server**
+
+```sh
+apt update && apt upgrade -y && \
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && \
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - && \
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+    /etc/apt/sources.list.d/jenkins.list' && \
+apt install software-properties-common && \
+add-apt-repository universe && \
+apt update && \
+apt install -y nodejs openjdk-8-jdk net-tools nginx git gcc g++ make certbot wget yarn && \
+systemctl start nginx && \
+systemctl enable nginx && \
+systemctl status nginx
+```
+
+After the installation you need to open port `:8080` for jenkins
+
+```sh
+ufw allow 8080/tcp
+```
+
+Also allow SSH, HTTP and HTTPS
+
+```sh
+ufw allow 'Nginx Full' && \
+ufw allow OpenSSH && \
+ufw enable && \
+ufw status && \
+ss -tln
+```
+
+<Mark>
+  It's IMPORTANT that you don't forget to allow OpenSSH before enabling the
+  firewall as you may get permanently locked out of your server.
+</Mark>
+
+Setting the JAVA_HOME Environment Variable
+
+Find the installation path for Java
+
+```sh
+update-alternatives --config java
+```
+
+```sh
+  Selection    Path                                            Priority   Status
+------------------------------------------------------------
+* 0            /usr/lib/jvm/java-11-openjdk-amd64/bin/java      1111      auto mode
+  1            /usr/lib/jvm/java-11-openjdk-amd64/bin/java      1111      manual mode
+  2            /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java   1081      manual mode
+
+```
+
+Copy the path for the current choice, marked with \*
+
+Create new environmnent variable with the path
+
+```sh
+nano /etc/environment
+```
+
+```sh
+# /etc/environment
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64/bin/java"
+JRE_HOME="/usr/lib/jvm/java-11-openjdk-amd64/bin/java/jre"
+```
+
+Reload enviroment variables
+
+```sh
+source /etc/environment
+```
+
+Make Jenkins listen only on localhost:8080
+
+```sh
+nano /etc/default/jenkins
+```
+
+Edit `JENKINS_ARGS` and add `--httpListenAddress=127.0.0.1` to it
+
+```sh
+JENKINS_ARGS="--webroot=/var/run/jenkins/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"
+```
+
+Restart Jenkins
+
+```sh
+systemctl restart jenkins
+```
+
+---
+
+Setup SSL certificates and NGINX configuartion then open Jenkins in the browser
+
+## 8. Configure Jenkins-GitHub SSH connections
+
+By the end of the tutorial you will be able to establish the following SSH connections
+
+- JENKINS SERVER -> HOST SERVER
+- JENKINS SERVER -> GITHUB
+- HOST SERVER -> GITHUB
+
+These are necessary to access private GitHub repos from the jenkins and the host servers. It will also allow the jenkins server to remotely execute commands in the host server through SSH.
+
+SSH into your `jenkins server` and switch to the jenkins user
+
+```sh
+ssh root@jenkins.example.com
+```
+
+```sh
+root@jenkins.example.com:~$ su -l jenkins
+```
+
+Verify that `authorized_keys` exists
+
+```sh
+jenkins@jenkins.example.com:~$ cat ~/.ssh/authorized_keys
+```
+
+If this file doesn't exist in the host server, create it and setup the following permissions
+
+```sh
+mkdir ~/.ssh && \
+chmod 700 ~/.ssh && \
+touch ~/.ssh/authorized_keys && \
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Generate SSH key pair
+
+```sh
+jenkins@jenkins.example.com:~$ ssh-keygen -t rsa -b 4096
+```
+
+---
+
+Repeat the same process for the host server
+
+```sh
+ssh root@example.com
+```
+
+```sh
+root@example.com:~$ su -l non-root-host-user
+```
+
+Verify that `authorized_keys` exists
+
+```sh
+non-root-host-user@example.com:~$ cat ~/.ssh/authorized_keys
+```
+
+If this file doesn't exist in the host server, create it and setup the following permissions
+
+```sh
+mkdir ~/.ssh && \
+chmod 700 ~/.ssh && \
+touch ~/.ssh/authorized_keys && \
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Generate SSH key pair
+
+```sh
+non-root-host-user@example.com:~$ ssh-keygen -t rsa -b 4096
+```
+
+---
+
+### Copy the `jenkins` user's public key
+
+```
+jenkins@jenkins.example.com:~$ cat ~/.ssh/id_rsa.pub
+```
+
+Paste the jenkins public key `id_rsa.pub` in the host server
+
+```sh
+non-root-host-user@example.com:~$ nano ~/.ssh/authorized_keys
+```
+
+Open GitHub in the browser and go to Settings > SSH and GPG Keys > Press [new SSH key](https://github.com/settings/ssh/new)
+
+- Title: `jenkins.example.com`
+
+- Key: Paste the jenkins public key `id_rsa.pub`
+
+---
+
+## Copy the `non-root-host-user`'s public key
+
+```
+non-root-host-user@example.com:~$ cat ~/.ssh/id_rsa.pub
+```
+
+Open GitHub in the browser and go to Settings > SSH and GPG Keys > Press [new SSH key](https://github.com/settings/ssh/new)
+
+- Title: `example.com`
+
+- Key: Paste non-root-host-user's public key `id_rsa.pub`
+
+---
+
+Test SSH communication
+
+JENKINS SERVER -> HOST SERVER
+
+```sh
+jenkins@jenkins.example.com:~$ ssh non-root-host-user@example.com
+```
+
+JENKINS SERVER -> GITHUB
+
+```sh
+jenkins@jenkins.example.com:~$ git clone git@github.com:username/app.git
+```
+
+HOST SERVER -> GITHUB
+
+```sh
+non-root-host-user@example.com:~$ git clone git@github.com:username/app.git
+```
+
+---
+
+## Create a CI/CD project in jenkins
+
+Open your GitHub repository and go to Settings > Webhook
+
+```
+https://github.com/username/someRepo/settings/hooks
+```
+
+- Payload URL:
+
+```
+https://jenkins.example.com/github-webhook/
+```
+
+- Content type: `application/x-www-form-urlencoded`
+- Secret: `[Leave empty]`
+- Which events would you like to trigger this webhook?: Just the push event. `[checked]`
+- Active: We will deliver event details when this hook is triggered. `[checked]`
+
+Create a new item in jenkins:
+
+```
+https://jenkins.example.com/view/all/newJob
+```
+
+Source Code Management
+
+- Git `[checked]`
+
+  - Repository URL: `git@github.com:username/someRepo.git`
+  - Credentials: `[Leave empty]`
+
+Build Triggers
+
+- GitHub hook trigger for GITScm polling: `[checked]`
+
+Build
+
+- Execute shell
+
+  ```
+  # TEST APP IN JENKINS
+  git pull origin master
+  yarn install
+
+  # DEPLOY APP IN HOST SERVER
+  ssh user@example.com<<EOF
+    cd ~/example.com
+    git pull origin master
+    yarn install
+    pm2 reload example.com
+    exit
+  EOF
+  ```
+
+To run app with zero downtime using PM2 run the app in cluster mode
+
+```sh
+pm2 start app.js --name example.com -i max
+```
+
+Whenever you're deploying to your host server, do **NOT** `restart`, use `reload` instead.
